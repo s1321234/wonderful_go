@@ -619,3 +619,16 @@ textarea {
 .nav-item span {
     font-size: 0.65rem; 
 }
+
+/* 駐車場情報ボックス (緑色) */
+.spot-parking {
+    font-size: 0.85rem;
+    color: #2E7D32; /* 濃い緑の文字 */
+    background-color: #E8F5E9; /* 薄い緑の背景 */
+    padding: 10px;
+    border-radius: 8px;
+    border-left: 4px solid #4CAF50; /* 左側の緑のライン */
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
