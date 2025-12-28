@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const screens = document.querySelectorAll('.screen');
 
     const textInputIds = [
-        'dog_name', 'breed', 'gender', 'age', 'weight', 'coat_type',
+        'dog_name', 'breed', 'gender', 'age', 'weight',
+        'coat_type', 'coat_type_detail', 'coat_color',
         'neutered_spayed', 'allergies', 'medical_history', 'others',
         'personality', 'barking_tendency', 'biting_habit',
         'walk_frequency_time', 'exercise_level', 'likes_water_play',
@@ -83,6 +84,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
+    // 入力欄の表示制御（グローバル関数化 or イベントリスナー登録）
+    // ==========================================
+    // 犬種の「その他」入力欄の制御
+    window.toggleOtherBreedInput = function () {
+        const breedSelect = document.getElementById('breed');
+        const otherContainer = document.getElementById('other_breed_container');
+        if (breedSelect && otherContainer) {
+            if (breedSelect.value === 'その他') {
+                otherContainer.style.display = 'block';
+                const otherInput = document.getElementById('other_breed');
+                if (otherInput) otherInput.focus();
+            } else {
+                otherContainer.style.display = 'none';
+            }
+        }
+    };
+
+    // 被毛の種類の詳細入力欄の制御
+    window.toggleCoatDetailInput = function () {
+        const coatSelect = document.getElementById('coat_type');
+        const detailContainer = document.getElementById('coat_detail_container');
+        if (coatSelect && detailContainer) {
+            // 「未選択」以外が選ばれたら、詳細入力欄を表示
+            if (coatSelect.value !== "") {
+                detailContainer.style.display = 'block';
+            } else {
+                detailContainer.style.display = 'none';
+            }
+        }
+    };
+
+    // セレクトボックスにイベントリスナーを紐付け
+    const breedSelectEl = document.getElementById('breed');
+    if (breedSelectEl) {
+        breedSelectEl.addEventListener('change', window.toggleOtherBreedInput);
+    }
+
+    const coatTypeSelectEl = document.getElementById('coat_type');
+    if (coatTypeSelectEl) {
+        coatTypeSelectEl.addEventListener('change', window.toggleCoatDetailInput);
+    }
+    // ==========================================
     // 3. 画面切り替え & データ読み込み
     // ==========================================
     function showScreen(screenId) {
@@ -113,6 +156,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     const el = document.getElementById(id);
                     if (el && savedInfo[id]) el.value = savedInfo[id];
                 });
+                // --- 犬種の読み込み処理を追加 ---
+                const breedSelect = document.getElementById('breed');
+                if (breedSelect && savedInfo['breed']) {
+                    // セレクトボックスの中に保存された値があるか確認
+                    const exists = Array.from(breedSelect.options).some(opt => opt.value === savedInfo['breed']);
+                    if (exists) {
+                        breedSelect.value = savedInfo['breed'];
+                    } else {
+                        // リストにない場合は「その他」にして、テキスト欄を表示
+                        breedSelect.value = 'その他';
+                        const otherContainer = document.getElementById('other_breed_container');
+                        const otherInput = document.getElementById('other_breed');
+                        if (otherContainer && otherInput) {
+                            otherContainer.style.display = 'block';
+                            otherInput.value = savedInfo['breed'];
+                        }
+                    }
+                }
+                // ----------------------------
                 radioNames.forEach(name => {
                     if (savedInfo[name]) {
                         const el = document.querySelector(`input[name="${name}"][value="${savedInfo[name]}"]`);
@@ -144,6 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         loadFavorites();
+        window.toggleOtherBreedInput();
+        window.toggleCoatDetailInput();
     }
     loadData();
 
@@ -157,6 +221,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const el = document.getElementById(id);
                 if (el) petInfo[id] = el.value;
             });
+            // --- 犬種の特殊処理を追加 ---
+            const breedSelect = document.getElementById('breed');
+            if (breedSelect && breedSelect.value === 'その他') {
+                const otherBreedName = document.getElementById('other_breed').value;
+                petInfo['breed'] = otherBreedName || 'その他'; // 入力があればそれを、なければ「その他」を保存
+            } else if (breedSelect) {
+                petInfo['breed'] = breedSelect.value;
+            }
+            // -------------------------
             radioNames.forEach(name => {
                 const checkedEl = document.querySelector(`input[name="${name}"]:checked`);
                 if (checkedEl) petInfo[name] = checkedEl.value;
